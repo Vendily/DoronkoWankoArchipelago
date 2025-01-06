@@ -15,7 +15,7 @@ namespace doronko_wanko_ap.Patches
             {
                 if (info.TargetAmount > 0 && info.CurrentAmount == info.TargetAmount)
                 {
-                    Plugin.BepinLogger.LogInfo("Finished a Damage target: " + info.TargetAmount);
+                    Plugin.BepinLogger.LogDebug("Finished a Damage target: " + info.TargetAmount);
                 }
             });
             AchievementEvents.OnNotificationRequired.Subscribe(delegate (Achievement Achievement)

@@ -15,7 +15,7 @@ def create_rules(self):
     set_rule(multiworld.get_location("Fan to play!", player),
              lambda state: (state.has("Living Room Fan",player) or state.has("Nursery Fan",player)))
 
-    visualize_regions(self.multiworld.get_region("Menu", player), "doronko_wanko.puml")
+    #visualize_regions(self.multiworld.get_region("Menu", player), "doronko_wanko.puml")
 
 
 def can_get_all_paintings(state,player):

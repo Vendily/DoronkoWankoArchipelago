@@ -29,7 +29,7 @@ namespace doronko_wanko_ap.Patches
             FieldInfo u_count = typeof(ItemBoxManager).GetField("unlockCount", BindingFlags.Instance | BindingFlags.NonPublic);
             
             int getTargetAmount = (int)typeof(ItemBoxManager).GetMethod("GetTargetAmount", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(self, null);
-            Plugin.BepinLogger.LogInfo($"Unlocked item at target {getTargetAmount}");
+            Plugin.BepinLogger.LogDebug($"Unlocked item at target {getTargetAmount}");
 
             t_Amount.SetValue(self, (int)t_Amount.GetValue(self) - getTargetAmount);
             c_Amount.SetValue(self, (int)c_Amount.GetValue(self) - getTargetAmount);
