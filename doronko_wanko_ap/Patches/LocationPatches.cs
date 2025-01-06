@@ -11,9 +11,17 @@ namespace doronko_wanko_ap.Patches
     {
         public static void GeneratePatches()
         {
+            ItemBoxManager.OnItemChargeUpdate.Subscribe(delegate ((int CurrentAmount, int TargetAmount) info)
+            {
+                if (info.TargetAmount > 0 && info.CurrentAmount == info.TargetAmount)
+                {
+                    Plugin.BepinLogger.LogInfo("Finished a Damage target: " + info.TargetAmount);
+                }
+            });
             AchievementEvents.OnNotificationRequired.Subscribe(delegate (Achievement Achievement)
             {
                 Plugin.ArchipelagoClient.SendLocation(Plugin.ArchipelagoClient.LocationHandler.GetArchipelagoName(Achievement.Id));
+                Plugin.ArchipelagoClient.GoalHandler.CheckGoalCompletion();
             });
         }
     }

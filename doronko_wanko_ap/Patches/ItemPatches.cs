@@ -41,8 +41,8 @@ namespace doronko_wanko_ap.Patches
 
         private static void GameLoop_Update(On.DamageAmountManager.orig_FixedUpdate orig, DamageAmountManager self)
         {
-            orig(self);
             Plugin.ArchipelagoClient.ItemHandler.Update();
+            orig(self);
         }
         
     }

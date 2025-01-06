@@ -5,6 +5,7 @@ using Archipelago.MultiClient.Net;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Packets;
 using doronko_wanko_ap.Handlers;
+using static System.Collections.Specialized.BitVector32;
 
 namespace doronko_wanko_ap.Archipelago
 {
@@ -21,6 +22,7 @@ namespace doronko_wanko_ap.Archipelago
 
         public ItemHandler ItemHandler = new();
         public LocationHandler LocationHandler = new();
+        public GoalHandler GoalHandler = new();
 
         /// <summary>
         /// call to connect to an Archipelago session. Connection info should already be set up on ServerData
@@ -165,6 +167,14 @@ namespace doronko_wanko_ap.Archipelago
             await session.Locations.CompleteLocationChecksAsync(apId);
         }
 
+        public void SendGoalCompletion()
+        {
+            Plugin.BepinLogger.LogInfo($"Sending goal completion");
+            var statusUpdatePacket = new StatusUpdatePacket();
+            statusUpdatePacket.Status = ArchipelagoClientState.ClientGoal;
+            session.Socket.SendPacket(statusUpdatePacket);
+        }
+
         public string GetPlayerNameFromSlot(int slot)
         {
             return session.Players.GetPlayerName(slot) ?? "Server";
@@ -179,5 +189,6 @@ namespace doronko_wanko_ap.Archipelago
         {
             return session.Locations.GetLocationNameFromId(id,Game) ?? $"Location[{id}]";
         }
+
     }
 }
