@@ -1,23 +1,9 @@
 name: Pome
-game: Doronko Wanko
-description: Excludes tempermental locations
-Doronko Wanko:
+game: DORONKO WANKO
+description: A Template DORONKO WANKO yaml
+DORONKO WANKO:
   progression_balancing: '50'
   accessibility: full
   goal: badge
   filler_damage_amount: 10_damage
-  exclude_locations:
-  - P$108700 Damage
-  - P$1200 Damage
-  - P$121200 Damage
-  - P$13700 Damage
-  - P$20121200 Damage
-  - P$23700 Damage
-  - P$33700 Damage
-  - P$46200 Damage
-  - P$58700 Damage
-  - P$6200 Damage
-  - P$71200 Damage
-  - P$83700 Damage
-  - P$96200 Damage
   start_inventory: {}

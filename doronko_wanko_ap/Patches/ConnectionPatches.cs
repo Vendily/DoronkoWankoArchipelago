@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using doronko_wanko_ap.Archipelago;
+using MonoMod.RuntimeDetour;
 using Newtonsoft.Json;
+using UnityEngine;
 
 namespace doronko_wanko_ap.Patches
 {
@@ -46,5 +49,6 @@ namespace doronko_wanko_ap.Patches
             ArchipelagoClient.ServerData.Password = data["Password"];
             Plugin.ArchipelagoClient.Connect();
         }
+
     }
 }

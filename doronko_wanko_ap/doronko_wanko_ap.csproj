@@ -3,8 +3,8 @@
     <PropertyGroup>
         <TargetFramework>net48</TargetFramework>
         <AssemblyName>doronko_wanko_ap</AssemblyName>
-        <Description>Doronko Wanko Archipelago Client Mod</Description>
-        <Version>1.0.0</Version>
+        <Description>DORONKO WANKO Archipelago Client Mod</Description>
+        <Version>0.2.0</Version>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>latest</LangVersion>
         <!-- you may need this for getting the multiclient dll to output for .net 6 and netstandard 2.0 -->
@@ -34,7 +34,7 @@
     </Target>
 
     <ItemGroup>
-        <PackageReference Include="Archipelago.MultiClient.Net" Version="6.5.0" />
+		<PackageReference Include="Archipelago.MultiClient.Net" Version="6.5.0"/>
         <PackageReference Include="BepInEx.Analyzers" Version="1.0.8" PrivateAssets="all" />
         <PackageReference Include="BepInEx.Core" Version="5.4.21" />
         <PackageReference Include="BepInEx.PluginInfoProps" Version="2.1.0" />
@@ -48,15 +48,18 @@
     <ItemGroup>
       <Reference Include="Assembly-CSharp">
         <HintPath>lib\Assembly-CSharp.dll</HintPath>
+        <Private>False</Private>
       </Reference>
       <Reference Include="Assembly-CSharp-firstpass">
         <HintPath>lib\Assembly-CSharp-firstpass.dll</HintPath>
+        <Private>False</Private>
       </Reference>
       <Reference Include="MMHOOK_Assembly-CSharp">
         <HintPath>lib\MMHOOK_Assembly-CSharp.dll</HintPath>
       </Reference>
       <Reference Include="UniRx">
         <HintPath>lib\UniRx.dll</HintPath>
+        <Private>False</Private>
       </Reference>
     </ItemGroup>
 

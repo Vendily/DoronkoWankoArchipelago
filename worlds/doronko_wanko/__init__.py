@@ -8,14 +8,14 @@ from .locations import doronko_wanko_locations  # same as above
 from .locations import base_id as loc_base_id
 from .rules import create_rules, can_get_all_badges, can_get_all_paintings
 from worlds.AutoWorld import World, WebWorld
-from BaseClasses import Region, Location, Item, Tutorial, ItemClassification, LocationProgressType
+from BaseClasses import Region, Location, Item, Tutorial, ItemClassification
 
 
 class DoronkoWankoWeb(WebWorld):
     theme = "dirt"
     tutorials = [Tutorial(
         "Multiworld Setup Guide",
-        "A guide to setting up the Doronko Wanko randomizer connected to an Archipelago Multiworld",
+        "A guide to setting up the DORONKO WANKO randomizer connected to an Archipelago Multiworld",
         "English",
         "setup_en.md",
         "setup/en",
@@ -24,11 +24,11 @@ class DoronkoWankoWeb(WebWorld):
 
 
 class DoronkoWankoItem(Item):  # or from Items import MyGameItem
-    game = "Doronko Wanko"  # name of the game/world this item is from
+    game = "DORONKO WANKO"  # name of the game/world this item is from
 
 
 class DoronkoWankoLocation(Location):  # or from Locations import MyGameLocation
-    game = "Doronko Wanko"  # name of the game/world this location is in
+    game = "DORONKO WANKO"  # name of the game/world this location is in
 
 
 class DoronkoWankoSettings(settings.Group):
@@ -37,7 +37,7 @@ class DoronkoWankoSettings(settings.Group):
 
 class DoronkoWankoWorld(World):
     """Insert description of the world/game here."""
-    game = "Doronko Wanko"  # name of the game/world
+    game = "DORONKO WANKO"  # name of the game/world
     options_dataclass = DoronkoWankoOptions  # options the player can set
     options: DoronkoWankoOptions  # typing hints for option results
     settings: typing.ClassVar[DoronkoWankoSettings]  # will be automatically assigned from type hint

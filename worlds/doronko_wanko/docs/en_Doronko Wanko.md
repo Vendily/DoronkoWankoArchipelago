@@ -1,4 +1,4 @@
-# Doronko Wanko
+# DORONKO WANKO
 
 ## What does randomization do to this game?
 

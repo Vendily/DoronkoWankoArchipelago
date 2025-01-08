@@ -12,7 +12,7 @@ namespace doronko_wanko_ap.Archipelago
     public class ArchipelagoClient
     {
         public const string APVersion = "0.4.4";
-        private const string Game = "Doronko Wanko";
+        private const string Game = "DORONKO WANKO";
 
         public static bool Authenticated;
         private bool attemptingConnection;
