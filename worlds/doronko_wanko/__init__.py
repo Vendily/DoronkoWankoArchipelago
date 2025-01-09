@@ -31,16 +31,11 @@ class DoronkoWankoLocation(Location):  # or from Locations import MyGameLocation
     game = "DORONKO WANKO"  # name of the game/world this location is in
 
 
-class DoronkoWankoSettings(settings.Group):
-    pass
-
-
 class DoronkoWankoWorld(World):
     """Insert description of the world/game here."""
     game = "DORONKO WANKO"  # name of the game/world
     options_dataclass = DoronkoWankoOptions  # options the player can set
     options: DoronkoWankoOptions  # typing hints for option results
-    settings: typing.ClassVar[DoronkoWankoSettings]  # will be automatically assigned from type hint
     topology_present = True  # show path to required location checks in spoiler
 
     item_name_to_id = {item["name"]: item["id"] for item in doronko_wanko_items}
