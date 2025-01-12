@@ -22,11 +22,15 @@ doronko_wanko_items: List[ItemDict] = [
     {"name": "Trophy", "id": base_id + 11, "classification": ItemClassification.useful},
     {"name": "Giant Gold Statue", "id": base_id + 12, "classification": ItemClassification.progression},
     {"name": "Gold Statue Hat", "id": base_id + 13, "classification": ItemClassification.filler},
+    # Flag items
+    {"name": "Mom Unlock", "id": base_id + 14, "classification": ItemClassification.progression},
+    {"name": "Wine Button Unlock", "id": base_id + 15, "classification": ItemClassification.progression},
+    {"name": "Train Unlock", "id": base_id + 16, "classification": ItemClassification.progression},
     # Filler Damage items
-    {"name": "P$10 Damage", "id": base_id + 14, "classification": ItemClassification.filler},
-    {"name": "P$100 Damage", "id": base_id + 15, "classification": ItemClassification.filler},
-    {"name": "P$250 Damage", "id": base_id + 16, "classification": ItemClassification.filler},
-    {"name": "P$500 Damage", "id": base_id + 17, "classification": ItemClassification.filler},
+    {"name": "P$10 Damage", "id": base_id + 17, "classification": ItemClassification.filler},
+    {"name": "P$100 Damage", "id": base_id + 18, "classification": ItemClassification.filler},
+    {"name": "P$250 Damage", "id": base_id + 19, "classification": ItemClassification.filler},
+    {"name": "P$500 Damage", "id": base_id + 20, "classification": ItemClassification.filler}
 ]
 
 group_table: Dict[str, Set[str]] = {

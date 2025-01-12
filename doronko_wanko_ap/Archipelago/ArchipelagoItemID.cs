@@ -15,10 +15,14 @@
         Trophy = 11,
         GiantGoldStatue = 12,
         GoldStatueHat = 13,
-        FillerStart = 14,
-        Damage10 = 14,
-        Damage100 = 15,
-        Damage250 = 16,
-        Damage500 = 17
+        FlagStart = 14,
+        MomUnlock = 14,
+        WineButtonUnlock = 15,
+        TrainUnlock = 16,
+        FillerStart = 17,
+        Damage10 = 17,
+        Damage100 = 18,
+        Damage250 = 19,
+        Damage500 = 20
     }
 }

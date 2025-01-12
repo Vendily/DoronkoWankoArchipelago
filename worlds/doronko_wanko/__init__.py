@@ -6,6 +6,7 @@ from .items import base_id as items_base_id
 from .items import group_table as items_groups
 from .locations import doronko_wanko_locations  # same as above
 from .locations import base_id as loc_base_id
+from .locations import group_table as loc_groups
 from .rules import create_rules, can_get_all_badges, can_get_all_paintings
 from worlds.AutoWorld import World, WebWorld
 from BaseClasses import Region, Location, Item, Tutorial, ItemClassification
@@ -31,6 +32,7 @@ class DoronkoWankoLocation(Location):  # or from Locations import MyGameLocation
     game = "DORONKO WANKO"  # name of the game/world this location is in
 
 
+
 class DoronkoWankoWorld(World):
     """Insert description of the world/game here."""
     game = "DORONKO WANKO"  # name of the game/world
@@ -41,6 +43,7 @@ class DoronkoWankoWorld(World):
     item_name_to_id = {item["name"]: item["id"] for item in doronko_wanko_items}
     location_name_to_id = {loc["name"]: loc["id"] for loc in doronko_wanko_locations}
     item_name_groups = items_groups
+    location_name_groups = loc_groups
 
     def get_filler_item_name(self) -> str:
         return ["P$10 Damage","P$100 Damage","P$250 Damage","P$500 Damage"][self.options.filler_damage_amount.value]
@@ -53,6 +56,8 @@ class DoronkoWankoWorld(World):
 
         regions = {
             "House": Region("House", self.player, self.multiworld),
+            "Train": Region("Train", self.player, self.multiworld),
+            "Mom": Region("Mom", self.player, self.multiworld),
             "Fixed Train":Region("Fixed Train", self.player, self.multiworld),
             "Gold Statue":Region("Gold Statue", self.player, self.multiworld),
             "12 Paintings":Region("12 Paintings", self.player, self.multiworld)
@@ -74,7 +79,9 @@ class DoronkoWankoWorld(World):
 
         # create Entrances and connect the Regions
         menu_region.connect(regions["House"])
-        regions["House"].connect(regions["Fixed Train"], rule=lambda state: state.has("Train Wheel",self.player))
+        regions["House"].connect(regions["Mom"], rule=lambda state: state.has("Mom Unlock", self.player))
+        regions["House"].connect(regions["Train"], rule=lambda state: state.has("Train Unlock",self.player))
+        regions["Train"].connect(regions["Fixed Train"], rule=lambda state: state.has("Train Wheel",self.player))
         regions["House"].connect(regions["Gold Statue"], rule=lambda state: state.has("Giant Gold Statue",self.player))
         regions["House"].connect(regions["12 Paintings"], rule=lambda state: state.has("12/12 Paintings",self.player))
 
@@ -90,6 +97,8 @@ class DoronkoWankoWorld(World):
         id = item_id - items_base_id - 1
 
         classification = doronko_wanko_items[id]["classification"]
+        if name == "Turret Gun" and self.options.logic == "glitched":
+            classification = ItemClassification.progression
         return DoronkoWankoItem(name, classification, item_id, player=self.player)
 
     def create_event(self,name: str) -> "DoronkoWankoItem":

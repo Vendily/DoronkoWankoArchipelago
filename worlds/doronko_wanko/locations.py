@@ -1,4 +1,4 @@
-from typing import List, TypedDict
+from typing import List, TypedDict, Set, Dict
 
 from typing_extensions import NotRequired,Optional
 
@@ -13,19 +13,19 @@ base_id = 0x561000
 # Yes, the badges are titled that way in English, slap a [sic] next to all of them
 doronko_wanko_locations: List[LocationInfo] = [
     # Damage Deliveries
-    {"name":"P$1200 Damage","id":base_id + 1,"badge": False},
-    {"name":"P$6200 Damage","id":base_id + 2,"badge": False},
-    {"name":"P$13700 Damage","id":base_id + 3,"badge": False},
-    {"name":"P$23700 Damage","id":base_id + 4,"badge": False},
-    {"name":"P$33700 Damage","id":base_id + 5,"badge": False},
-    {"name":"P$46200 Damage","id":base_id + 6,"badge": False},
-    {"name":"P$58700 Damage","id":base_id + 7,"badge": False},
-    {"name":"P$71200 Damage","id":base_id + 8,"badge": False},
-    {"name":"P$83700 Damage","id":base_id + 9,"badge": False},
-    {"name":"P$96200 Damage","id":base_id + 10,"badge": False},
-    {"name":"P$108700 Damage","id":base_id + 11,"badge": False},
-    {"name":"P$121200 Damage","id":base_id + 12,"badge": False},
-    {"name":"P$20121200 Damage","id":base_id + 13,"badge": False, "region":"Gold Statue"},
+    {"name":"Damage Gift 1 (P$1,200)","id":base_id + 1,"inGameId":"Damage0","badge": False},
+    {"name":"Damage Gift 2 (P$5,000)","id":base_id + 2,"inGameId":"Damage1","badge": False},
+    {"name":"Damage Gift 3 (P$7,500)","id":base_id + 3,"inGameId":"Damage2","badge": False},
+    {"name":"Damage Gift 4 (P$10,000) 1","id":base_id + 4,"inGameId":"Damage3","badge": False},
+    {"name":"Damage Gift 5 (P$10,000) 2","id":base_id + 5,"inGameId":"Damage4","badge": False},
+    {"name":"Damage Gift 6 (P$12,500) 1","id":base_id + 6,"inGameId":"Damage5","badge": False},
+    {"name":"Damage Gift 7 (P$12,500) 2","id":base_id + 7,"inGameId":"Damage6","badge": False},
+    {"name":"Damage Gift 8 (P$12,500) 3","id":base_id + 8,"inGameId":"Damage7","badge": False},
+    {"name":"Damage Gift 9 (P$12,500) 4","id":base_id + 9,"inGameId":"Damage8","badge": False},
+    {"name":"Damage Gift 10 (P$12,500) 5","id":base_id + 10,"inGameId":"Damage9","badge": False},
+    {"name":"Damage Gift 11 (P$12,500) 6","id":base_id + 11,"inGameId":"Damage10","badge": False},
+    {"name":"Damage Gift 12 (P$12,500) 7","id":base_id + 12,"inGameId":"Damage11","badge": False},
+    {"name":"Damage Gift 13 (P$20,000,000)","id":base_id + 13,"inGameId":"Damage12","badge": False, "region":"Gold Statue"},
     # Memory Badges
     {"name":"Shake Your Body","id":base_id + 14,"inGameId":"ShakeYourBody","badge": True},
     {"name":"Splaash","id":base_id + 15,"inGameId":"100thSplash","badge": True},
@@ -57,7 +57,7 @@ doronko_wanko_locations: List[LocationInfo] = [
     {"name":"I'm not tasty!","id":base_id + 40,"inGameId":"Tasty","badge": True},
     {"name":"Clogged pipe","id":base_id + 41,"inGameId":"CloggedPipe","badge": True},
     {"name":"Small blackhole?","id":base_id + 42,"inGameId":"SmallBlackhole","badge": True},
-    {"name":"You tired, mom?","id":base_id + 43,"inGameId":"YouTiredMom","badge": True},
+    {"name":"You tired, mom?","id":base_id + 43,"inGameId":"YouTiredMom","badge": True,"region":"Mom"},
     {"name":"Chores after dinner","id":base_id + 44,"inGameId":"ChoresDinner","badge": True},
     # Living Room Badges
     {"name":"Living room","id":base_id + 45,"inGameId":"LivingRoom","badge": True},
@@ -90,12 +90,12 @@ doronko_wanko_locations: List[LocationInfo] = [
     {"name":"The most colorful!","id":base_id + 69,"inGameId":"TheMostColorful","badge": True},
     # Any Train Wheel can trigger this
     {"name":"What's this wheel used for?","id":base_id + 70,"inGameId":"WhatsFor","badge": True},
-    {"name":"Two wheels left!","id":base_id + 71,"inGameId":"TwoWheelsLeft","badge": True},
-    {"name":"One wheel left!","id":base_id + 72,"inGameId":"OneWheelLeft","badge": True},
-    {"name":"All abroad!!","id":base_id + 73,"inGameId":"AllAbroad","badge": True, "region":"Fixed Train"},
+    {"name":"Two wheels left!","id":base_id + 71,"inGameId":"TwoWheelsLeft","badge": True,"region":"Train"},
+    {"name":"One wheel left!","id":base_id + 72,"inGameId":"OneWheelLeft","badge": True,"region":"Train"},
+    {"name":"All abroad!!","id":base_id + 73,"inGameId":"AllAbroad","badge": True,"region":"Fixed Train"},
     {"name":"Top of my house","id":base_id + 74,"inGameId":"TopOfMyHouse","badge": True},
-    {"name":"Lot's of footprints","id":base_id + 75,"inGameId":"Footprints","badge": True},
-    {"name":"Mom?","id":base_id + 76,"inGameId":"MomB","badge": True},
+    {"name":"Lot's of footprints","id":base_id + 75,"inGameId":"Footprints","badge": True,"region":"Fixed Train"},
+    {"name":"Mom?","id":base_id + 76,"inGameId":"MomB","badge": True,"region":"Mom"},
     {"name":"Opened!","id":base_id + 77,"inGameId":"Opened","badge": True, "region":"Fixed Train"},
     # Basement Living Room
     {"name":"Pome is in business!","id":base_id + 78,"inGameId":"PomeBuisness","badge": True},
@@ -105,7 +105,7 @@ doronko_wanko_locations: List[LocationInfo] = [
     {"name":"Flooded basement","id":base_id + 82,"inGameId":"FloodedBasement","badge": True},
     {"name":"I dominated basement!","id":base_id + 83,"inGameId":"IDominatedBasement","badge": True},
     {"name":"Pome delivery","id":base_id + 84,"inGameId":"PomeDelivery","badge": True},
-    {"name":"Good night, mom!","id":base_id + 85,"inGameId":"GoodNightMom","badge": True},
+    {"name":"Good night, mom!","id":base_id + 85,"inGameId":"GoodNightMom","badge": True,"region":"Mom"},
     {"name":"What's this circle...","id":base_id + 86,"inGameId":"WhatsThisCircle","badge": True},
     # Wine Cellar
     {"name":"Lots of vintage wines","id":base_id + 87,"inGameId":"LotsOfVintageWines","badge": True},
@@ -118,3 +118,11 @@ doronko_wanko_locations: List[LocationInfo] = [
     {"name":"The Wine Deluge","id":base_id + 93,"inGameId":"TotalDamage10000","badge": True, "region":"Fixed Train"},
     {"name":"Hidden aisle","id":base_id + 94,"inGameId":"HiddenAisle","badge": True, "region":"Fixed Train"},
 ]
+
+group_table: Dict[str, Set[str]] = {
+    "Damage": {"Damage Gift 1 (P$1,200)","Damage Gift 2 (P$5,000)","Damage Gift 3 (P$7,500)",
+               "Damage Gift 4 (P$10,000) 1","Damage Gift 5 (P$10,000) 2",
+               "Damage Gift 6 (P$12,500) 1","Damage Gift 7 (P$12,500) 2","Damage Gift 8 (P$12,500) 3","Damage Gift 9 (P$12,500) 4",
+               "Damage Gift 10 (P$12,500) 5","Damage Gift 11 (P$12,500) 6","Damage Gift 12 (P$12,500) 7",
+               "Damage Gift 13 (P$20,000,000)"}
+}

@@ -5,5 +5,6 @@ DORONKO WANKO:
   progression_balancing: '50'
   accessibility: full
   goal: badge
+  logic: standard
   filler_damage_amount: 10_damage
   start_inventory: {}

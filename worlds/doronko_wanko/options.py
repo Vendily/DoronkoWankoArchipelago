@@ -2,6 +2,14 @@ from dataclasses import dataclass
 
 from Options import Choice, Toggle, PerGameCommonOptions
 
+class Logic(Choice):
+    """Standard: Expected game logic
+    Glitched: Use glitches or other items to stain some paintings or access the top of the house"""
+    display_name = "Logic"
+    option_standard = 0
+    option_glitched = 1
+    default = 0
+
 class Goal(Choice):
     """Choose the end goal.
     Cake: Reveal all the hidden paintings and interact with the cake
@@ -23,4 +31,5 @@ class FillerDamageAmount(Choice):
 @dataclass
 class DoronkoWankoOptions(PerGameCommonOptions):
     goal: Goal
+    logic: Logic
     filler_damage_amount: FillerDamageAmount
