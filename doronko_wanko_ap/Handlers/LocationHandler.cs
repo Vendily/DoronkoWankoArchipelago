@@ -14,11 +14,10 @@ namespace doronko_wanko_ap.Handlers
     {
         private readonly string DATA_PATH = Path.Combine(Environment.CurrentDirectory, "BepInEx", "Plugins", "doronko_wanko_ap", "data");
         private readonly Dictionary<string, string> locations;
-        private readonly List<string> damagelist;
-
+        public int damageIndex { get; set; }
         public string GetDamageGameName(int index)
         {
-            return damagelist[index];
+            return $"Damage{index}";
         }
 
         public string GetArchipelagoName(string inGameName)
@@ -30,17 +29,7 @@ namespace doronko_wanko_ap.Handlers
         {
             locations = LoadLocationsFromFile();
             List<int> templist = new List<int>();
-            foreach ( string k in locations.Keys)
-            {
-                if (!k.StartsWith("Damage")) continue;
-                templist.Add(int.Parse(k.Substring("Damage".Length)));
-            }
-            templist.Sort();
-            damagelist = new List<string>();
-            foreach (int x in templist)
-            {
-                damagelist.Add("Damage" + x);
-            }
+            damageIndex = 0;
         }
 
         private Dictionary<string, string> LoadLocationsFromFile()
