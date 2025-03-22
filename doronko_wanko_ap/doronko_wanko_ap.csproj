@@ -4,7 +4,7 @@
         <TargetFramework>net48</TargetFramework>
         <AssemblyName>doronko_wanko_ap</AssemblyName>
         <Description>DORONKO WANKO Archipelago Client Mod</Description>
-        <Version>0.3.0</Version>
+        <Version>0.3.1</Version>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>latest</LangVersion>
         <!-- you may need this for getting the multiclient dll to output for .net 6 and netstandard 2.0 -->
