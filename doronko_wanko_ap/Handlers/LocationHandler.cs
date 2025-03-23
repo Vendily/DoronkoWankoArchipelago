@@ -15,6 +15,7 @@ namespace doronko_wanko_ap.Handlers
         private readonly string DATA_PATH = Path.Combine(Environment.CurrentDirectory, "BepInEx", "Plugins", "doronko_wanko_ap", "data");
         private readonly Dictionary<string, string> locations;
         public int damageIndex { get; set; }
+        public int overflowAmount { get; set; }
         public string GetDamageGameName(int index)
         {
             return $"Damage{index}";
@@ -28,8 +29,8 @@ namespace doronko_wanko_ap.Handlers
         public LocationHandler()
         {
             locations = LoadLocationsFromFile();
-            List<int> templist = new List<int>();
             damageIndex = 0;
+            overflowAmount = 0;
         }
 
         private Dictionary<string, string> LoadLocationsFromFile()

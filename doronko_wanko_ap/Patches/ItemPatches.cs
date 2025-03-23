@@ -9,7 +9,6 @@ using HarmonyLib;
 
 namespace doronko_wanko_ap.Patches
 {
-
     [HarmonyPatch(typeof(ItemBoxManager), "Start")]
     public class ItemBoxManager_Start_Patch
     {
@@ -19,7 +18,6 @@ namespace doronko_wanko_ap.Patches
         }
 
     }
-
 
     [HarmonyPatch(typeof(Mommy))]
     [HarmonyPatch(MethodType.Constructor)]

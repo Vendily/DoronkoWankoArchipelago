@@ -2,12 +2,10 @@
 using TMPro;
 using HarmonyLib;
 using System;
+using static DamageAmountManager;
 
 namespace doronko_wanko_ap.Patches
 {
-    /*
-     * For some reason, when I add a prefix here, it causes Damage filler items to be added endlessly...
-     * Shame, this way would have been easy to implement
     [HarmonyPatch(typeof(ItemBoxManager), "Start")]
     public class ItemBoxManager_DamageOverflow_Patch
     {
@@ -18,8 +16,8 @@ namespace doronko_wanko_ap.Patches
             overflowAmount = 0;
             DamageAmountManager.OnStackCreateOrDestory.Where(((bool IsCreate, int Amount) info) => !info.IsCreate).Subscribe(delegate ((bool IsCreate, int Amount) info)
             {
-                int targetAmount = Traverse.Create(__instance).Method("GetTargetAmount", new Type[] { typeof(int) }).GetValue<int>();
-                Plugin.BepinLogger.LogDebug($"Target: {targetAmount}, Total: {___totalAmount}, Stack: {info.Amount}");
+                int targetAmount = Traverse.Create(__instance).Method("GetTargetAmount", new Type[] { typeof(int) }).GetValue<int>(0);
+                Plugin.BepinLogger.LogDebug($"Target: {targetAmount}, Target: {targetAmount}, Stack: {info.Amount}");
                 if ((___totalAmount + info.Amount) > targetAmount)
                 {
                     overflowAmount = (___totalAmount + info.Amount) - targetAmount;
@@ -28,7 +26,7 @@ namespace doronko_wanko_ap.Patches
             });
         }
 
-    }*/
+    }
 
     [HarmonyPatch(typeof(ItemBoxManager), "ItemUnlock")]
     public class ItemBoxManager_ItemUnlock_Patch
@@ -49,13 +47,14 @@ namespace doronko_wanko_ap.Patches
             Plugin.ArchipelagoClient.LocationHandler.damageIndex = ___unlockCount;
             Plugin.ArchipelagoClient.SendLocation(Plugin.ArchipelagoClient.LocationHandler.GetArchipelagoName(damage_id));
             ItemBoxManager.OnItemChargeUpdate.OnNext((___currentAmount, getTargetAmount.GetValue<int>(0)));
-            /*
+            
             if (ItemBoxManager_DamageOverflow_Patch.overflowAmount > 0)
             {
                 int temp_overflow = ItemBoxManager_DamageOverflow_Patch.overflowAmount;
                 ItemBoxManager_DamageOverflow_Patch.overflowAmount = 0;
                 Plugin.BepinLogger.LogDebug($"Temp Overflow amount: {temp_overflow}; Overflow Amount: {ItemBoxManager_DamageOverflow_Patch.overflowAmount}");
-            }*/
+                OnStackCreateOrDestory.OnNext((false, temp_overflow));
+            }
             return false; // The original should not be run
         }
 
