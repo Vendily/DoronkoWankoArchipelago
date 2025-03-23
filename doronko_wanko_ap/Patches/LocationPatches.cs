@@ -1,22 +1,100 @@
-﻿using System.Reflection;
-using UniRx;
+﻿using UniRx;
 using TMPro;
+using HarmonyLib;
+using System;
 
 namespace doronko_wanko_ap.Patches
 {
+    /*
+     * For some reason, when I add a prefix here, it causes Damage filler items to be added endlessly...
+     * Shame, this way would have been easy to implement
+    [HarmonyPatch(typeof(ItemBoxManager), "Start")]
+    public class ItemBoxManager_DamageOverflow_Patch
+    {
+        public static int overflowAmount { get; set; }
+
+        public static void Prefix(ItemBoxManager __instance, int ___totalAmount)
+        {
+            overflowAmount = 0;
+            DamageAmountManager.OnStackCreateOrDestory.Where(((bool IsCreate, int Amount) info) => !info.IsCreate).Subscribe(delegate ((bool IsCreate, int Amount) info)
+            {
+                int targetAmount = Traverse.Create(__instance).Method("GetTargetAmount", new Type[] { typeof(int) }).GetValue<int>();
+                Plugin.BepinLogger.LogDebug($"Target: {targetAmount}, Total: {___totalAmount}, Stack: {info.Amount}");
+                if ((___totalAmount + info.Amount) > targetAmount)
+                {
+                    overflowAmount = (___totalAmount + info.Amount) - targetAmount;
+                    Plugin.BepinLogger.LogDebug($"Overflow Amount: {overflowAmount}");
+                }
+            });
+        }
+
+    }*/
+
+    [HarmonyPatch(typeof(ItemBoxManager), "ItemUnlock")]
+    public class ItemBoxManager_ItemUnlock_Patch
+    {
+
+        public static bool Prefix(ItemBoxManager __instance, ref int ___totalAmount, ref int ___currentAmount, ref int ___unlockCount)
+        {
+            ItemBoxManager.OnItemUnlock.OnNext(value: true);
+            Traverse getTargetAmount = Traverse.Create(__instance).Method("GetTargetAmount", new Type[] {  typeof(int) });
+            int targetAmount = getTargetAmount.GetValue<int>(0);
+            Plugin.BepinLogger.LogDebug($"Unlocked item at target {targetAmount}");
+
+            ___totalAmount-= targetAmount;
+            ___currentAmount-= targetAmount;
+            ___unlockCount++;
+
+            string damage_id = Plugin.ArchipelagoClient.LocationHandler.GetDamageGameName(___unlockCount - 1);
+            Plugin.ArchipelagoClient.LocationHandler.damageIndex = ___unlockCount;
+            Plugin.ArchipelagoClient.SendLocation(Plugin.ArchipelagoClient.LocationHandler.GetArchipelagoName(damage_id));
+            ItemBoxManager.OnItemChargeUpdate.OnNext((___currentAmount, getTargetAmount.GetValue<int>(0)));
+            /*
+            if (ItemBoxManager_DamageOverflow_Patch.overflowAmount > 0)
+            {
+                int temp_overflow = ItemBoxManager_DamageOverflow_Patch.overflowAmount;
+                ItemBoxManager_DamageOverflow_Patch.overflowAmount = 0;
+                Plugin.BepinLogger.LogDebug($"Temp Overflow amount: {temp_overflow}; Overflow Amount: {ItemBoxManager_DamageOverflow_Patch.overflowAmount}");
+            }*/
+            return false; // The original should not be run
+        }
+
+    }
+
+    [HarmonyPatch(typeof(ItemBoxUINotifier), "Start")]
+    public class ItemBoxUINotifier_Start_Patch
+    {
+
+        public static void Postfix(ItemBoxUINotifier __instance, TextMeshProUGUI ___nextAmount)
+        {
+            ItemBoxManager.OnItemChargeUpdate.Subscribe(delegate ((int CurrentAmount, int TargetAmount) info)
+            {
+                int damage_idx = Plugin.ArchipelagoClient.LocationHandler.damageIndex;
+                if (damage_idx <= 12) // only 13 gifts
+                {
+                    // add 1 to visually look the same as AP World
+                    ___nextAmount.text = $"(Damage Gift {damage_idx + 1}) {___nextAmount.text}";
+                }
+            });
+        }
+
+    }
+
+    [HarmonyPatch(typeof(DamageAmountManager), "FixedUpdate")]
+    public class DamageAmountManager_FixedUpdate_Hook
+    {
+
+        public static void Prefix()
+        {
+            Plugin.ArchipelagoClient.ItemHandler.Update();
+        }
+
+    }
     public class LocationPatches
     {
-        private static FieldInfo t_Amount;
-        private static FieldInfo c_Amount;
-        private static FieldInfo u_count;
-        private static FieldInfo nextAmountUI;
-        private static MethodInfo getTargetAmount;
 
         public static void GeneratePatches()
         {
-            On.ItemBoxManager.ItemUnlock += ItemBoxManager_ItemUnlock;
-            On.ItemBoxUINotifier.Start += ItemBoxUINotifier_Start;
-            On.DamageAmountManager.FixedUpdate += GameLoop_Update;
             AchievementEvents.OnNotificationRequired.Subscribe(delegate (Achievement Achievement)
             {
                 Plugin.ArchipelagoClient.SendLocation(Plugin.ArchipelagoClient.LocationHandler.GetArchipelagoName(Achievement.Id));
@@ -43,48 +121,6 @@ namespace doronko_wanko_ap.Patches
                     AchievementManager.Instance.IncrementCount("TotalAmountLv1");
                 }
             });
-
-            t_Amount = typeof(ItemBoxManager).GetField("totalAmount", BindingFlags.Instance | BindingFlags.NonPublic);
-            c_Amount = typeof(ItemBoxManager).GetField("currentAmount", BindingFlags.Instance | BindingFlags.NonPublic);
-            u_count = typeof(ItemBoxManager).GetField("unlockCount", BindingFlags.Instance | BindingFlags.NonPublic);
-            nextAmountUI = typeof(ItemBoxUINotifier).GetField("nextAmount", BindingFlags.Instance | BindingFlags.NonPublic);
-            getTargetAmount = typeof(ItemBoxManager).GetMethod("GetTargetAmount", BindingFlags.Instance | BindingFlags.NonPublic);
-        }
-
-        private static void ItemBoxManager_ItemUnlock(On.ItemBoxManager.orig_ItemUnlock orig, ItemBoxManager self)
-        {
-            ItemBoxManager.OnItemUnlock.OnNext(value: true);
-            int get_TargetAmount = (int)getTargetAmount.Invoke(self, [0]);
-            Plugin.BepinLogger.LogDebug($"Unlocked item at target {get_TargetAmount}");
-
-            t_Amount.SetValue(self, (int)t_Amount.GetValue(self) - get_TargetAmount);
-            c_Amount.SetValue(self, (int)c_Amount.GetValue(self) - get_TargetAmount);
-            u_count.SetValue(self, (int)u_count.GetValue(self) + 1);
-            string damage_id = Plugin.ArchipelagoClient.LocationHandler.GetDamageGameName((int)u_count.GetValue(self) - 1);
-            Plugin.ArchipelagoClient.LocationHandler.damageIndex = (int)u_count.GetValue(self);
-            Plugin.ArchipelagoClient.SendLocation(Plugin.ArchipelagoClient.LocationHandler.GetArchipelagoName(damage_id));
-            ItemBoxManager.OnItemChargeUpdate.OnNext(((int)c_Amount.GetValue(self), (int)getTargetAmount.Invoke(self, [0])));
-        }
-
-        private static void ItemBoxUINotifier_Start(On.ItemBoxUINotifier.orig_Start orig, ItemBoxUINotifier self)
-        {
-            orig(self);
-            ItemBoxManager.OnItemChargeUpdate.Subscribe(delegate ((int CurrentAmount, int TargetAmount) info)
-            {
-                int damage_idx = Plugin.ArchipelagoClient.LocationHandler.damageIndex;
-                if (damage_idx <= 12) // only 13 gifts
-                {
-                    TextMeshProUGUI nextUI = (TextMeshProUGUI)nextAmountUI.GetValue(self);
-                    // add 1 to visually look the same as AP World
-                    nextUI.text = $"(Damage Gift {damage_idx+1}) {nextUI.text}";
-                }
-            });
-        }
-
-        private static void GameLoop_Update(On.DamageAmountManager.orig_FixedUpdate orig, DamageAmountManager self)
-        {
-            Plugin.ArchipelagoClient.ItemHandler.Update();
-            orig(self);
         }
     }
 }

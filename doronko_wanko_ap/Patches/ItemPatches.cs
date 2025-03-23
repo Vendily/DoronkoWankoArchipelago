@@ -5,35 +5,33 @@ using doronko_wanko_ap.Handlers;
 using UniRx;
 using UnityEngine;
 using System.Linq;
+using HarmonyLib;
 
 namespace doronko_wanko_ap.Patches
 {
-    public class ItemPatches
+
+    [HarmonyPatch(typeof(ItemBoxManager), "Start")]
+    public class ItemBoxManager_Start_Patch
     {
-
-        public static void GeneratePatches()
+        public static void Postfix(ItemBoxManager __instance)
         {
-            On.ItemBoxManager.Start += ItemBoxManager_Start;
-            On.Mommy.ctor += Mommy_ctor;
-            On.Mommy.ChangeArea += Mommy_ChangeArea;
-            On.Train.Start += Train_Start;
-            On.TemperaturePanel.Start += TemperaturePanel_Start;
+            Plugin.ArchipelagoClient.ItemHandler.ItemBoxManager = __instance;
         }
 
-        private static void ItemBoxManager_Start(On.ItemBoxManager.orig_Start orig, ItemBoxManager self)
-        {
-            orig(self);
-            Plugin.ArchipelagoClient.ItemHandler.ItemBoxManager = self;
-        }
+    }
 
-        private static void Mommy_ctor(On.Mommy.orig_ctor orig, Mommy self, DustStainerParams stainerParams, AreaDetector avoidedTarget, GameObject basementModel, GameObject nurseryModel, GameObject kitchenModel, MommyAnimator animator)
+
+    [HarmonyPatch(typeof(Mommy))]
+    [HarmonyPatch(MethodType.Constructor)]
+    [HarmonyPatch(new Type[] { typeof(DustStainerParams), typeof(AreaDetector), typeof(GameObject), typeof(GameObject), typeof(GameObject), typeof(MommyAnimator) })]
+    public class Mommy_ctor_Patch
+    {
+        public static void Postfix(Mommy __instance, Dictionary<Area, GameObject> ___area2model)
         {
-            orig(self, stainerParams, avoidedTarget, basementModel, nurseryModel, kitchenModel, animator);
-            Plugin.ArchipelagoClient.ItemHandler.Mommy = self;
+            Plugin.ArchipelagoClient.ItemHandler.Mommy = __instance;
             try
             {
-                Dictionary<Area, GameObject> area2model = (Dictionary<Area, GameObject>)typeof(Mommy).GetField("area2model", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(self);
-                foreach (var (area2, gameObject2) in area2model.Select(x => (x.Key, x.Value)))
+                foreach (var (area2, gameObject2) in ___area2model.Select(x => (x.Key, x.Value)))
                 {
                     gameObject2.SetActive(false);
                 }
@@ -44,24 +42,43 @@ namespace doronko_wanko_ap.Patches
             }
         }
 
-        private static bool Mommy_ChangeArea(On.Mommy.orig_ChangeArea orig, Mommy self, Area nextArea)
+    }
+
+    [HarmonyPatch(typeof(Mommy), "ChangeArea")]
+    public class Mommy_ChangeArea_Patch
+    {
+        public static bool Prefix(ref bool __result)
         {
-            if (!Plugin.ArchipelagoClient.ItemHandler.FlagItems[0]) return false;
-            return orig(self, nextArea);
+            if (!Plugin.ArchipelagoClient.ItemHandler.FlagItems[0])
+            {
+                __result = false;
+                return false;
+            }
+            return true;
         }
 
-        private static void TemperaturePanel_Start(On.TemperaturePanel.orig_Start orig, TemperaturePanel self)
+    }
+
+    [HarmonyPatch(typeof(Train), "Start")]
+    public class Train_Start_Patch
+    {
+
+        public static void Postfix(Train __instance)
         {
-            orig(self);
-            self.gameObject.SetActive(false);
-            Plugin.ArchipelagoClient.ItemHandler.WineButtons.Add(self);
+            Plugin.ArchipelagoClient.ItemHandler.Train = __instance;
+            __instance.gameObject.SetActive(false);
         }
 
-        private static void Train_Start(On.Train.orig_Start orig, Train self)
+    }
+
+    [HarmonyPatch(typeof(TemperaturePanel), "Start")]
+    public class TemperaturePanel_Start_Patch
+    {
+
+        public static void Postfix(TemperaturePanel __instance)
         {
-            orig(self);
-            Plugin.ArchipelagoClient.ItemHandler.Train = self;
-            self.gameObject.SetActive(false);
+            __instance.gameObject.SetActive(false);
+            Plugin.ArchipelagoClient.ItemHandler.WineButtons.Add(__instance);
         }
 
     }

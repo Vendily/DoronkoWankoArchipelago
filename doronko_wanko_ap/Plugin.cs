@@ -1,8 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using BepInEx;
 using BepInEx.Logging;
 using doronko_wanko_ap.Archipelago;
 using doronko_wanko_ap.Patches;
+using HarmonyLib;
+using Newtonsoft.Json;
 
 namespace doronko_wanko_ap
 {
@@ -35,27 +39,16 @@ namespace doronko_wanko_ap
             }
             try
             {
-                BepinLogger.LogInfo("Connection Patches");
-                ConnectionPatches.GeneratePatches();
+                BepinLogger.LogInfo("Creating Patches");
+                new Harmony(PluginGUID).PatchAll(GetType().Assembly);
             }
             catch (Exception ex)
             {
-
                 BepinLogger.LogError(ex);
             }
             try
             {
-                BepinLogger.LogInfo("Item Patches");
-                ItemPatches.GeneratePatches();
-            }
-            catch (Exception ex)
-            {
-
-                BepinLogger.LogError(ex);
-            }
-            try
-            {
-                BepinLogger.LogInfo("Location Patches");
+                BepinLogger.LogInfo("Location Hooks");
                 LocationPatches.GeneratePatches();
             }
             catch (Exception ex)
@@ -64,6 +57,24 @@ namespace doronko_wanko_ap
                 BepinLogger.LogError(ex);
             }
             BepinLogger.LogInfo($"{ModDisplayInfo} Loaded!");
+        }
+
+        public static void OnStartGame()
+        {
+            string locationsPath = Path.Combine(Environment.CurrentDirectory, "AP.json");
+
+            if (!File.Exists(locationsPath))
+            {
+                Plugin.BepinLogger.LogError($"Failed to load connection data {locationsPath}");
+                throw new FileNotFoundException("Failed to load connection data", locationsPath);
+            }
+
+            string json = File.ReadAllText(locationsPath);
+            Dictionary<string, string> data = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
+            ArchipelagoClient.ServerData.Uri = data["Url"];
+            ArchipelagoClient.ServerData.SlotName = data["SlotName"];
+            ArchipelagoClient.ServerData.Password = data["Password"];
+            Plugin.ArchipelagoClient.Connect();
         }
     }
 }

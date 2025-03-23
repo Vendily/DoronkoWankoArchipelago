@@ -58,9 +58,6 @@
         <HintPath>lib\DOTween.dll</HintPath>
         <Private>False</Private>
       </Reference>
-      <Reference Include="MMHOOK_Assembly-CSharp">
-        <HintPath>lib\MMHOOK_Assembly-CSharp.dll</HintPath>
-      </Reference>
       <Reference Include="UniRx">
         <HintPath>lib\UniRx.dll</HintPath>
         <Private>False</Private>
