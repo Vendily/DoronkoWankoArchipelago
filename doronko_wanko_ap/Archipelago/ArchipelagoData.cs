@@ -7,9 +7,9 @@ namespace doronko_wanko_ap.Archipelago
 
     public class ArchipelagoData
     {
-        public string Uri;
-        public string SlotName;
-        public string Password;
+        public string Uri { get; internal set; }
+        public string SlotName { get; internal set; }
+        public string Password { get; internal set; }
         public int Index;
 
         public List<long> CheckedLocations;
@@ -26,7 +26,7 @@ namespace doronko_wanko_ap.Archipelago
         /// seed for this archipelago data. Can be used when loading a file to verify the session the player is trying to
         /// load is valid to the room it's connecting to.
         /// </summary>
-        private string seed;
+        public string seed { get; private set; }
 
         private Dictionary<string, object> slotData;
 
