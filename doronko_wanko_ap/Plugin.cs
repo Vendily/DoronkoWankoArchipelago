@@ -15,7 +15,7 @@ namespace doronko_wanko_ap
     {
         public const string PluginGUID = "com.vendily.doronko_wanko_ap";
         public const string PluginName = "DORONKO WANKO Archipelago";
-        public const string PluginVersion = "0.3.1";
+        public const string PluginVersion = "0.3.2";
 
         public const string ModDisplayInfo = $"{PluginName} v{PluginVersion}";
         private const string APDisplayInfo = $"Archipelago v{ArchipelagoClient.APVersion}";
