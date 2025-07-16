@@ -1,42 +1,33 @@
-﻿using System.IO;
-using System.Text;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using doronko_wanko_ap.Archipelago;
 using HarmonyLib;
-using UnityEngine;
+using Newtonsoft.Json;
 
 namespace doronko_wanko_ap.Patches
 {
-    [HarmonyPatch(typeof(TitleScreen), "ShowMainMenu")]
+    [HarmonyPatch(typeof(TitleScreen), "LoadOpeningScene")]
     public class TitleScreen_OpeningScene_Patch
     {
-        public static void Prefix()
+
+        [HarmonyPostfix]
+        public static void Postfix()
         {
             Plugin.OnStartGame();
         }
 
     }
 
-    [HarmonyPatch(typeof(AchievementSaver))]
-    [HarmonyPatch("SaveDataPath", MethodType.Getter)]
-    public class AchievementSaver_SaveDataPath_Patch
+    [HarmonyPatch(typeof(TitleScreen), "LoadMainScene")]
+    public class TitleScreen_MainScene_Patch
     {
-        private static string cached_filename = null;
-        public static void Postfix(ref string __result)
+
+        [HarmonyPostfix]
+        public static void Postfix()
         {
-            if (ArchipelagoClient.Authenticated)
-            {
-                if (AchievementSaver_SaveDataPath_Patch.cached_filename == null)
-                {
-                    StringBuilder filename_builder = new StringBuilder();
-                    filename_builder.Append(ArchipelagoClient.ServerData.seed);
-                    filename_builder.Append("_");
-                    filename_builder.Append(ArchipelagoClient.ServerData.SlotName);
-                    filename_builder.Append("_Achievements.dat");
-                    AchievementSaver_SaveDataPath_Patch.cached_filename = filename_builder.ToString();
-                    Plugin.BepinLogger.LogDebug("Save File: " + AchievementSaver_SaveDataPath_Patch.cached_filename);
-                }
-                __result = Path.Combine(Application.persistentDataPath, "Saves", AchievementSaver_SaveDataPath_Patch.cached_filename);
-            }
+            Plugin.OnStartGame();
         }
+
     }
 }
