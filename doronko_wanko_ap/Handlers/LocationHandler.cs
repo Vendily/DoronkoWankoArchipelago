@@ -45,5 +45,10 @@ namespace doronko_wanko_ap.Handlers
             string json = File.ReadAllText(locationsPath);
             return JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
         }
+
+        public IEnumerable<string> GetLocationEnumerator()
+        {
+            return locations.Keys as IEnumerable<string>;
+        }
     }
 }

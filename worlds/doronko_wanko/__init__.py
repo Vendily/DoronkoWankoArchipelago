@@ -39,6 +39,7 @@ class DoronkoWankoWorld(World):
     options_dataclass = DoronkoWankoOptions  # options the player can set
     options: DoronkoWankoOptions  # typing hints for option results
     topology_present = True  # show path to required location checks in spoiler
+    web: DoronkoWankoWeb
 
     item_name_to_id = {item["name"]: item["id"] for item in doronko_wanko_items}
     location_name_to_id = {loc["name"]: loc["id"] for loc in doronko_wanko_locations}

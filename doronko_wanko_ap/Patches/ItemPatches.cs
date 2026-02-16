@@ -80,4 +80,14 @@ namespace doronko_wanko_ap.Patches
         }
 
     }
+
+    [HarmonyPatch(typeof(EndCont), "Start")]
+    public class EndCont_Start_Patch
+    {
+        public static bool Prefix(EndCont __instance)
+        {
+            __instance.gameObject.SetActive(value: false);
+            return false;
+        }
+    }
 }

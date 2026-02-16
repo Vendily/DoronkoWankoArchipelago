@@ -25,10 +25,13 @@ namespace doronko_wanko_ap.Handlers
         public Train Train { get; set; }
         public readonly bool[] FlagItems = [false, false, false];
 
+        private float item_queue_duration;
+        private const float ITEM_QUEUE_DELAY = 5.0f;
 
         public ItemHandler()
         {
             WineButtons = new();
+            item_queue_duration = 0f;
         }
 
 
@@ -56,8 +59,11 @@ namespace doronko_wanko_ap.Handlers
             }
         }
 
-        public void Update()
+        public void TryUpdate(float d_time)
         {
+            item_queue_duration += d_time;
+            if (item_queue_duration < ITEM_QUEUE_DELAY) return;
+            item_queue_duration = 0f;
             lock (itemLock)
             {
                 if (_itemQueue.Count > 0 && CanReceiveItem())

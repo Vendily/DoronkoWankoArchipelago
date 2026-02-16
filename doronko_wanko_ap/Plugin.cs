@@ -75,6 +75,7 @@ namespace doronko_wanko_ap
             ArchipelagoClient.ServerData.SlotName = data["SlotName"];
             ArchipelagoClient.ServerData.Password = data["Password"];
             Plugin.ArchipelagoClient.Connect();
+            Plugin.ArchipelagoClient.CheckLocations();
         }
     }
 }

@@ -3,6 +3,7 @@ using TMPro;
 using HarmonyLib;
 using System;
 using static DamageAmountManager;
+using UnityEngine;
 
 namespace doronko_wanko_ap.Patches
 {
@@ -17,7 +18,7 @@ namespace doronko_wanko_ap.Patches
             DamageAmountManager.OnStackCreateOrDestory.Where(((bool IsCreate, int Amount) info) => !info.IsCreate).Subscribe(delegate ((bool IsCreate, int Amount) info)
             {
                 int targetAmount = Traverse.Create(__instance).Method("GetTargetAmount", new Type[] { typeof(int) }).GetValue<int>(0);
-                Plugin.BepinLogger.LogDebug($"Target: {targetAmount}, Target: {targetAmount}, Stack: {info.Amount}");
+                Plugin.BepinLogger.LogDebug($"Target: {targetAmount}, Total: {___totalAmount}, Stack: {info.Amount}");
                 if ((___totalAmount + info.Amount) > targetAmount)
                 {
                     overflowAmount = (___totalAmount + info.Amount) - targetAmount;
@@ -85,7 +86,8 @@ namespace doronko_wanko_ap.Patches
 
         public static void Prefix()
         {
-            Plugin.ArchipelagoClient.ItemHandler.Update();
+
+            Plugin.ArchipelagoClient.ItemHandler.TryUpdate(Time.fixedDeltaTime);
         }
 
     }

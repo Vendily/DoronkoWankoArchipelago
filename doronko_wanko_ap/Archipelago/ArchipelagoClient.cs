@@ -1,11 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using Archipelago.MultiClient.Net;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Packets;
 using doronko_wanko_ap.Handlers;
+using Unity.Collections;
 using static System.Collections.Specialized.BitVector32;
+using static UnityEngine.ParticleSystem.PlaybackState;
 
 namespace doronko_wanko_ap.Archipelago
 {
@@ -190,5 +194,25 @@ namespace doronko_wanko_ap.Archipelago
             return session.Locations.GetLocationNameFromId(id,Game) ?? $"Location[{id}]";
         }
 
+        internal void CheckLocations()
+        {
+            List<string> locs_to_update = new List<string>();
+            foreach (long loc_id in session.Locations.AllMissingLocations)
+            {
+                string loc = GetLocationNameFromId(loc_id);
+                if (loc.StartsWith("Damage")) continue;
+                if (AchievementManager.Instance.AllAchievements.TryGetValue(loc, out var achievement))
+                {
+                    if (achievement.IsAcquired)
+                    {
+                        locs_to_update.Add(loc);
+                    }
+                }
+            }
+            foreach (string loc in locs_to_update)
+            {
+                SendLocation(loc);
+            }
+        }
     }
 }

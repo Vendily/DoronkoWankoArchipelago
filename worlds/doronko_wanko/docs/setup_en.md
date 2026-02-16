@@ -12,7 +12,7 @@ Follow the instructions in the README of the DORONKO WANKO Archipelago GitHub.
 
 ## Connecting
 
-1. Before launching the game, edit the `AP.json` file in the root of the Celeste 64 install.
+1. Before launching the game, edit the `AP.json` file in the root of the DORONKO WANKO install.
 
 2. For the `Url` field, enter the address of the server, such as `archipelago.gg:38281`. Your server host should be able to tell you this.
 
