@@ -4,30 +4,58 @@ using HarmonyLib;
 using System;
 using static DamageAmountManager;
 using UnityEngine;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection.Emit;
 
 namespace doronko_wanko_ap.Patches
 {
-    [HarmonyPatch(typeof(ItemBoxManager), "Start")]
+    [HarmonyDebug]
+    [HarmonyPatch(typeof(ItemBoxManager), "<Start>b__10_1")]
     public class ItemBoxManager_DamageOverflow_Patch
     {
         public static int overflowAmount { get; set; }
 
-        public static void Prefix(ItemBoxManager __instance, int ___totalAmount)
+        static void CalcAndSetOverflowAmount(int totalAmount, int targetAmount)
         {
-            overflowAmount = 0;
-            DamageAmountManager.OnStackCreateOrDestory.Where(((bool IsCreate, int Amount) info) => !info.IsCreate).Subscribe(delegate ((bool IsCreate, int Amount) info)
+            int overflow = totalAmount - targetAmount;
+            if (overflow > 0)
             {
-                int targetAmount = Traverse.Create(__instance).Method("GetTargetAmount", new Type[] { typeof(int) }).GetValue<int>(0);
-                Plugin.BepinLogger.LogDebug($"Target: {targetAmount}, Total: {___totalAmount}, Stack: {info.Amount}");
-                if ((___totalAmount + info.Amount) > targetAmount)
-                {
-                    overflowAmount = (___totalAmount + info.Amount) - targetAmount;
-                    Plugin.BepinLogger.LogDebug($"Overflow Amount: {overflowAmount}");
-                }
-            });
+                overflowAmount = overflow;
+            }
         }
+        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+        {
 
+            var instructionsToInsert = new List<CodeInstruction>();
+
+            instructionsToInsert.Add(new CodeInstruction(OpCodes.Ldarg_0));
+            instructionsToInsert.Add(new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(ItemBoxManager), "totalAmount")));
+            instructionsToInsert.Add(new CodeInstruction(OpCodes.Ldloc_0));
+            instructionsToInsert.Add(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ItemBoxManager_DamageOverflow_Patch), "CalcAndSetOverflowAmount", [typeof(int), typeof(int)])));
+
+            var branch_pos = -1;
+            var codes = new List<CodeInstruction>(instructions);
+            for (var i = 0; i < codes.Count; i++)
+            {
+                if (codes[i].opcode == OpCodes.Ble)
+                {
+                    branch_pos = i; break;
+                }
+            }
+            if (branch_pos < 0)
+            {
+                Plugin.BepinLogger.LogError("Failed to find Ble_S call in Start Lambda Transpiler");
+            }
+            else
+            {
+                codes.InsertRange(branch_pos+1, instructionsToInsert);
+            }
+
+            return codes;
+        }
     }
+
 
     [HarmonyPatch(typeof(ItemBoxManager), "ItemUnlock")]
     public class ItemBoxManager_ItemUnlock_Patch
