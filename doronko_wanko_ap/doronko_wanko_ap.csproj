@@ -35,9 +35,12 @@
 
     <ItemGroup>
 		<PackageReference Include="Archipelago.MultiClient.Net" Version="6.7.0" />
-        <PackageReference Include="BepInEx.Analyzers" Version="1.0.8" PrivateAssets="all" />
-        <PackageReference Include="BepInEx.Core" Version="5.4.21" />
-        <PackageReference Include="BepInEx.PluginInfoProps" Version="2.1.0" />
+		<PackageReference Include="BepInEx.Analyzers" Version="1.0.8">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="BepInEx.Core" Version="5.4.21" />
+		<PackageReference Include="BepInEx.PluginInfoProps" Version="2.1.0" />
         <PackageReference Include="UnityEngine.Modules" Version="2021.3.33" IncludeAssets="compile" />
     </ItemGroup>
 

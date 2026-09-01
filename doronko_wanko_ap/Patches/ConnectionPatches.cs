@@ -18,6 +18,19 @@ namespace doronko_wanko_ap.Patches
 
     }
 
+    [HarmonyPatch(typeof(TitleScreen), "LoadOpeningScene")]
+    public class TitleScreen_SkipIntro_Patch
+    {
+
+        [HarmonyPrefix]
+        public static bool Prefix(TitleScreen __instance)
+        {
+            __instance.LoadMainScene();
+            return false;
+        }
+
+    }
+
     [HarmonyPatch(typeof(AchievementSaver))]
     [HarmonyPatch("SaveDataPath", MethodType.Getter)]
     public class AchievementSaver_SaveDataPath_Patch
