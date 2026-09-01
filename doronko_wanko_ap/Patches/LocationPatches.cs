@@ -9,48 +9,6 @@ using UnityEngine;
 
 namespace doronko_wanko_ap.Patches
 {
-
-    [HarmonyDebug]
-    [HarmonyPatch(typeof(ItemBoxManager), "<Start>b__10_2")]
-    public class ItemBoxManager_DamageOverflow_InnerPatch
-    {
-        static void ApplyOverflowDamage()
-        {
-            if (ItemBoxManager_DamageOverflow_Patch.overflowAmount > 0)
-            {
-                DamageAmountManager damageAmountManager = Plugin.ArchipelagoClient.ItemHandler.DamageAmountManager;
-                int temp_overflow = ItemBoxManager_DamageOverflow_Patch.overflowAmount;
-                ItemBoxManager_DamageOverflow_Patch.overflowAmount = 0;
-                Plugin.BepinLogger.LogDebug($"Temp Overflow amount: {temp_overflow}; Overflow Amount: {ItemBoxManager_DamageOverflow_Patch.overflowAmount}");
-                DamageAmountManager.OnStackCreateOrDestory.OnNext((false, temp_overflow));
-            }
-        }
-        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
-        {
-            var codes = new List<CodeInstruction>(instructions);
-            int op_pos = -1;
-            for (var i = 0; i < codes.Count; i++)
-            {
-                if (codes[i].opcode == OpCodes.Call && codes[i].operand.ToString().Contains("Void ItemUnlock()"))
-                {
-                    op_pos = i;
-                    break;
-                }
-            }
-            if (op_pos < 0)
-            {
-                Plugin.BepinLogger.LogError("Failed to find call instance void ItemBoxManager::ItemUnlock() in Start Inner Lambda Transpiler");
-            }
-            else
-            {
-                var instructionsToInsert = new List<CodeInstruction>();
-                instructionsToInsert.Add(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ItemBoxManager_DamageOverflow_InnerPatch), "ApplyOverflowDamage")));
-                codes.InsertRange(op_pos + 1, instructionsToInsert);
-            }
-
-            return codes;
-        }
-    }
     [HarmonyDebug]
     [HarmonyPatch(typeof(ItemBoxManager), "<Start>b__10_1")]
     public class ItemBoxManager_DamageOverflow_Patch
@@ -59,10 +17,12 @@ namespace doronko_wanko_ap.Patches
 
         static void CalcAndSetOverflowAmount(int totalAmount, int targetAmount)
         {
+            Plugin.BepinLogger.LogDebug($"Total: {totalAmount}, Target: {targetAmount}");
             int overflow = totalAmount - targetAmount;
             if (overflow > 0)
             {
                 overflowAmount = overflow;
+                Plugin.BepinLogger.LogDebug($"Saved Overflow: {overflowAmount}");
             }
         }
 
@@ -98,6 +58,7 @@ namespace doronko_wanko_ap.Patches
     [HarmonyDebug]
     public class ItemBoxManager_ItemUnlock_Patch
     {
+        public static bool sentLocation { get; set; }
         public static MethodBase TargetMethod()
         {
             var targetMethod = typeof(ItemBoxManager).GetMethod("ItemUnlock", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -109,10 +70,14 @@ namespace doronko_wanko_ap.Patches
 
         static void SendLocation(int unlockCount)
         {
-            Plugin.BepinLogger.LogInfo($"Unlock Count = {unlockCount}");
-            string damage_id = Plugin.ArchipelagoClient.LocationHandler.GetDamageGameName(unlockCount);
-            Plugin.ArchipelagoClient.LocationHandler.damageIndex = unlockCount + 1;
-            Plugin.ArchipelagoClient.SendLocation(Plugin.ArchipelagoClient.LocationHandler.GetArchipelagoName(damage_id));
+            if (!sentLocation)
+            {
+                Plugin.BepinLogger.LogInfo($"Unlock Count = {unlockCount}");
+                string damage_id = Plugin.ArchipelagoClient.LocationHandler.GetDamageGameName(unlockCount);
+                Plugin.ArchipelagoClient.LocationHandler.damageIndex = unlockCount + 1;
+                Plugin.ArchipelagoClient.SendLocation(Plugin.ArchipelagoClient.LocationHandler.GetArchipelagoName(damage_id));
+                sentLocation = true;
+            }
         }
         public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {
@@ -149,40 +114,82 @@ namespace doronko_wanko_ap.Patches
         }
     }
 
-/*
-    [HarmonyPatch(typeof(ItemBoxManager), "ItemUnlock")]
-    public class ItemBoxManager_ItemUnlock_Patch
+    [HarmonyDebug]
+    [HarmonyPatch(typeof(ItemBoxManager), "<Start>b__10_2")]
+    public class ItemBoxManager_ItemUnlock_Cleanup
     {
-
-        public static bool Prefix(ItemBoxManager __instance, ref int ___totalAmount, ref int ___currentAmount, ref int ___unlockCount)
+        static void DamageOverflowAndResetSendLocation()
         {
-            ItemBoxManager.OnItemUnlock.OnNext(value: true);
-            Traverse getTargetAmount = Traverse.Create(__instance).Method("GetTargetAmount", new Type[] {  typeof(int) });
-            int targetAmount = getTargetAmount.GetValue<int>(0);
-            Plugin.BepinLogger.LogDebug($"Unlocked item at target {targetAmount}");
-
-            ___totalAmount-= targetAmount;
-            ___currentAmount-= targetAmount;
-            ___unlockCount++;
-
-            string damage_id = Plugin.ArchipelagoClient.LocationHandler.GetDamageGameName(___unlockCount - 1);
-            Plugin.ArchipelagoClient.LocationHandler.damageIndex = ___unlockCount;
-            Plugin.ArchipelagoClient.SendLocation(Plugin.ArchipelagoClient.LocationHandler.GetArchipelagoName(damage_id));
-            ItemBoxManager.OnItemChargeUpdate.OnNext((___currentAmount, getTargetAmount.GetValue<int>(0)));
-            
             if (ItemBoxManager_DamageOverflow_Patch.overflowAmount > 0)
             {
                 int temp_overflow = ItemBoxManager_DamageOverflow_Patch.overflowAmount;
                 ItemBoxManager_DamageOverflow_Patch.overflowAmount = 0;
                 Plugin.BepinLogger.LogDebug($"Temp Overflow amount: {temp_overflow}; Overflow Amount: {ItemBoxManager_DamageOverflow_Patch.overflowAmount}");
-                OnStackCreateOrDestory.OnNext((false, temp_overflow));
+                DamageAmountManager.OnAmountCount.OnNext((DamageAmountManager.DamageCategory.Floor, temp_overflow));
             }
-            return false; // The original should not be run
+            
+            ItemBoxManager_ItemUnlock_Patch.sentLocation = false;
         }
+        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
+        {
+            var codes = new List<CodeInstruction>(instructions);
+            int op_pos = -1;
+            for (var i = 0; i < codes.Count; i++)
+            {
+                if (codes[i].opcode == OpCodes.Call && codes[i].operand.ToString().Contains("Void ItemUnlock()"))
+                {
+                    op_pos = i;
+                    break;
+                }
+            }
+            if (op_pos < 0)
+            {
+                Plugin.BepinLogger.LogError("Failed to find call instance void ItemBoxManager::ItemUnlock() in Start Inner Lambda Transpiler");
+            }
+            else
+            {
+                var instructionsToInsert = new List<CodeInstruction>();
+                instructionsToInsert.Add(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ItemBoxManager_ItemUnlock_Cleanup), "DamageOverflowAndResetSendLocation")));
+                codes.InsertRange(op_pos + 1, instructionsToInsert);
+            }
 
+            return codes;
+        }
     }
-*/
-    [HarmonyPatch(typeof(ItemBoxUINotifier), "Start")]
+        /*
+            [HarmonyPatch(typeof(ItemBoxManager), "ItemUnlock")]
+            public class ItemBoxManager_ItemUnlock_Patch
+            {
+
+                public static bool Prefix(ItemBoxManager __instance, ref int ___totalAmount, ref int ___currentAmount, ref int ___unlockCount)
+                {
+                    ItemBoxManager.OnItemUnlock.OnNext(value: true);
+                    Traverse getTargetAmount = Traverse.Create(__instance).Method("GetTargetAmount", new Type[] {  typeof(int) });
+                    int targetAmount = getTargetAmount.GetValue<int>(0);
+                    Plugin.BepinLogger.LogDebug($"Unlocked item at target {targetAmount}");
+
+                    ___totalAmount-= targetAmount;
+                    ___currentAmount-= targetAmount;
+                    ___unlockCount++;
+
+                    string damage_id = Plugin.ArchipelagoClient.LocationHandler.GetDamageGameName(___unlockCount - 1);
+                    Plugin.ArchipelagoClient.LocationHandler.damageIndex = ___unlockCount;
+                    Plugin.ArchipelagoClient.SendLocation(Plugin.ArchipelagoClient.LocationHandler.GetArchipelagoName(damage_id));
+                    ItemBoxManager.OnItemChargeUpdate.OnNext((___currentAmount, getTargetAmount.GetValue<int>(0)));
+
+                    if (ItemBoxManager_DamageOverflow_Patch.overflowAmount > 0)
+                    {
+                        int temp_overflow = ItemBoxManager_DamageOverflow_Patch.overflowAmount;
+                        ItemBoxManager_DamageOverflow_Patch.overflowAmount = 0;
+                        Plugin.BepinLogger.LogDebug($"Temp Overflow amount: {temp_overflow}; Overflow Amount: {ItemBoxManager_DamageOverflow_Patch.overflowAmount}");
+                        OnStackCreateOrDestory.OnNext((false, temp_overflow));
+                    }
+                    return false; // The original should not be run
+                }
+
+            }
+        */
+        [HarmonyPatch(typeof(ItemBoxUINotifier), "Start")]
     public class ItemBoxUINotifier_Start_Patch
     {
 
@@ -199,14 +206,6 @@ namespace doronko_wanko_ap.Patches
             });
         }
 
-    }
-    [HarmonyPatch(typeof(DamageAmountManager), "Start")]
-    public class DamageAmountManager_Start_Hook
-    {
-        public static void Prefix(DamageAmountManager __instance)
-        {
-            Plugin.ArchipelagoClient.ItemHandler.DamageAmountManager = __instance;
-        }
     }
 
     [HarmonyPatch(typeof(DamageAmountManager), "FixedUpdate")]
