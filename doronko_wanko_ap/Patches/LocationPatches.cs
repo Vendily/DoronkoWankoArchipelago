@@ -39,7 +39,7 @@ namespace doronko_wanko_ap.Patches
             }
             if (branch_pos < 0)
             {
-                Plugin.BepinLogger.LogError("Failed to find Ble_S call in Start Lambda Transpiler");
+                Plugin.BepinLogger.LogError("Failed to find Ble call in Start Lambda Transpiler");
             }
             else
             {
@@ -67,7 +67,17 @@ namespace doronko_wanko_ap.Patches
 
             return moveNextMethod;
         }
-
+        static void DamageOverflowAndResetSendLocation()
+        {
+            if (ItemBoxManager_DamageOverflow_Patch.overflowAmount > 0)
+            {
+                int temp_overflow = ItemBoxManager_DamageOverflow_Patch.overflowAmount;
+                ItemBoxManager_DamageOverflow_Patch.overflowAmount = 0;
+                Plugin.BepinLogger.LogDebug($"Temp Overflow amount: {temp_overflow}; Overflow Amount: {ItemBoxManager_DamageOverflow_Patch.overflowAmount}");
+                DamageAmountManager.OnStackCreateOrDestory.OnNext((false, temp_overflow));
+            }
+            sentLocation = false;
+        }
         static void SendLocation(int unlockCount)
         {
             if (!sentLocation)
@@ -110,33 +120,11 @@ namespace doronko_wanko_ap.Patches
                 instructionsToInsert.Add(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ItemBoxManager_ItemUnlock_Patch), "SendLocation", [typeof(int)])));
                 codes.InsertRange(op_start + 1, instructionsToInsert);
             }
-            return codes;
-        }
-    }
-
-    [HarmonyDebug]
-    [HarmonyPatch(typeof(ItemBoxManager), "<Start>b__10_2")]
-    public class ItemBoxManager_ItemUnlock_Cleanup
-    {
-        static void DamageOverflowAndResetSendLocation()
-        {
-            if (ItemBoxManager_DamageOverflow_Patch.overflowAmount > 0)
-            {
-                int temp_overflow = ItemBoxManager_DamageOverflow_Patch.overflowAmount;
-                ItemBoxManager_DamageOverflow_Patch.overflowAmount = 0;
-                Plugin.BepinLogger.LogDebug($"Temp Overflow amount: {temp_overflow}; Overflow Amount: {ItemBoxManager_DamageOverflow_Patch.overflowAmount}");
-                DamageAmountManager.OnAmountCount.OnNext((DamageAmountManager.DamageCategory.Floor, temp_overflow));
-            }
-            
-            ItemBoxManager_ItemUnlock_Patch.sentLocation = false;
-        }
-        public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
-        {
-            var codes = new List<CodeInstruction>(instructions);
+            // Add damage overflow damage
             int op_pos = -1;
-            for (var i = 0; i < codes.Count; i++)
+            for (var i = codes.Count-1; i > 0 ; i--)
             {
-                if (codes[i].opcode == OpCodes.Call && codes[i].operand.ToString().Contains("Void ItemUnlock()"))
+                if (codes[i].opcode == OpCodes.Callvirt && codes[i].operand.ToString().Contains("Void OnNext"))
                 {
                     op_pos = i;
                     break;
@@ -144,52 +132,18 @@ namespace doronko_wanko_ap.Patches
             }
             if (op_pos < 0)
             {
-                Plugin.BepinLogger.LogError("Failed to find call instance void ItemBoxManager::ItemUnlock() in Start Inner Lambda Transpiler");
+                Plugin.BepinLogger.LogError("Failed to find callvirt System.Void UniRx.Subject`1<System.ValueTuple`2<System.Int32,System.Int32>>::OnNext(T) in ItemUnlock() Transpiler");
             }
             else
             {
                 var instructionsToInsert = new List<CodeInstruction>();
-                instructionsToInsert.Add(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ItemBoxManager_ItemUnlock_Cleanup), "DamageOverflowAndResetSendLocation")));
+                instructionsToInsert.Add(new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(ItemBoxManager_ItemUnlock_Patch), "DamageOverflowAndResetSendLocation")));
                 codes.InsertRange(op_pos + 1, instructionsToInsert);
             }
-
             return codes;
         }
     }
-        /*
-            [HarmonyPatch(typeof(ItemBoxManager), "ItemUnlock")]
-            public class ItemBoxManager_ItemUnlock_Patch
-            {
-
-                public static bool Prefix(ItemBoxManager __instance, ref int ___totalAmount, ref int ___currentAmount, ref int ___unlockCount)
-                {
-                    ItemBoxManager.OnItemUnlock.OnNext(value: true);
-                    Traverse getTargetAmount = Traverse.Create(__instance).Method("GetTargetAmount", new Type[] {  typeof(int) });
-                    int targetAmount = getTargetAmount.GetValue<int>(0);
-                    Plugin.BepinLogger.LogDebug($"Unlocked item at target {targetAmount}");
-
-                    ___totalAmount-= targetAmount;
-                    ___currentAmount-= targetAmount;
-                    ___unlockCount++;
-
-                    string damage_id = Plugin.ArchipelagoClient.LocationHandler.GetDamageGameName(___unlockCount - 1);
-                    Plugin.ArchipelagoClient.LocationHandler.damageIndex = ___unlockCount;
-                    Plugin.ArchipelagoClient.SendLocation(Plugin.ArchipelagoClient.LocationHandler.GetArchipelagoName(damage_id));
-                    ItemBoxManager.OnItemChargeUpdate.OnNext((___currentAmount, getTargetAmount.GetValue<int>(0)));
-
-                    if (ItemBoxManager_DamageOverflow_Patch.overflowAmount > 0)
-                    {
-                        int temp_overflow = ItemBoxManager_DamageOverflow_Patch.overflowAmount;
-                        ItemBoxManager_DamageOverflow_Patch.overflowAmount = 0;
-                        Plugin.BepinLogger.LogDebug($"Temp Overflow amount: {temp_overflow}; Overflow Amount: {ItemBoxManager_DamageOverflow_Patch.overflowAmount}");
-                        OnStackCreateOrDestory.OnNext((false, temp_overflow));
-                    }
-                    return false; // The original should not be run
-                }
-
-            }
-        */
-        [HarmonyPatch(typeof(ItemBoxUINotifier), "Start")]
+    [HarmonyPatch(typeof(ItemBoxUINotifier), "Start")]
     public class ItemBoxUINotifier_Start_Patch
     {
 

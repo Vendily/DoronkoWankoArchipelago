@@ -20,7 +20,6 @@ namespace doronko_wanko_ap.Handlers
         private static readonly object itemLock = new();
         private readonly int[] DAMAGE_AMOUNTS = [10, 100, 250, 500];
         public ItemBoxManager ItemBoxManager { get; set; }
-        public DamageAmountManager DamageAmountManager { get; set; }
         public Mommy Mommy { get; set; }
         public List<TemperaturePanel> WineButtons { get; set; }
         public Train Train { get; set; }
